@@ -1,0 +1,54 @@
+---
+# tasks file for debian.base-packages
+
+- when: ansible_parent_role_names is defined
+  debug:
+    msg:  "{{ role_name }} invoked from Parentrole: {{ ansible_parent_role_names.0 }}"
+  run_once: yes
+
+# Debian-Packages ##############################################################################
+- name: "Updating Packages-Facts First Time"
+  package_facts:
+    manager:          auto
+  when:               BASE_PACKAGES__DEB is defined and BASE_PACKAGES__PACKAGE_FACTS_FIRSTRUN is not defined
+  register:           BASE_PACKAGES__PACKAGE_FACTS_FIRSTRUN
+
+- name: "Installing Requested Debian-Packages: {{ BASE_PACKAGES__DEB if BASE_PACKAGES__DEB is defined }}"
+  apt:
+    name:   "{{ BASE_PACKAGES__DEB }}"
+    state:            present
+    update_cache:     yes
+    cache_valid_time: "{{ BASE_PACKAGES__DEB_CACHE_VALID_TIME }}"
+    install_recommends: "{{ BASE_PACKAGES__INSTALL_RECOMMENDS | d( 'yes' ) }}"
+  with_items:         "{{ BASE_PACKAGES__DEB }}"
+  when:               BASE_PACKAGES__DEB is defined and item not in ansible_facts.packages
+  register:           BASE_PACKAGES__APT_STATUS
+
+- name: "Updating Ansible Packages-Facts After APT-Change"
+  package_facts:
+    manager:          auto
+  when:               BASE_PACKAGES__APT_STATUS.changed
+
+- name: "Unset variables"
+  set_fact:
+    BASE_PACKAGES__APT_STATUS:
+  when:               BASE_PACKAGES__APT_STATUS.changed
+
+
+# Python2-Packages ############################################################################
+
+- name: "Installing Requested PIP2-Packages {{ BASE_PACKAGES__PIP2 if BASE_PACKAGES__DEB is defined }}"
+#- name: "{{ ansible_parent_role_names.0 + ' | ' if ansible_parent_role_names is defined }}Installing Requested PIP2-Packages"
+#- name: test
+  pip:
+    name: "{{ BASE_PACKAGES__PIP2 }}"
+    executable: pip2
+  when: BASE_PACKAGES__PIP2 is defined
+
+
+# Python3-Packages ############################################################################
+- name: "Installing Requested PIP3-Packages {{ BASE_PACKAGES__PIP3 if BASE_PACKAGES__DEB is defined }}"
+  pip:
+    name: "{{ BASE_PACKAGES__PIP3 }}"
+    executable: pip3
+  when: BASE_PACKAGES__PIP3 is defined

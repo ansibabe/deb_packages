@@ -1,0 +1,28 @@
+---
+
+BASE_PACKAGES__DEB_CACHE_VALID_TIME:      3600
+#BASE_PACKAGES__DEB:
+#- sudo
+#- locales
+#- htop
+#- ipcalc
+#- locate
+#- tcpdump
+#- iperf
+#- vim
+#- net-tools
+#- iproute2
+#- psmisc
+#- tmux
+#- moreutils
+#- rsync
+#- git
+#- python-pip
+#- python3-pip
+#
+#BASE_PACKAGES__PIP2:
+#- virtualenv
+#
+#BASE_PACKAGES__PIP3:
+#- virtualenv
+#
